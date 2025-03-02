@@ -1,61 +1,66 @@
 const { createInterface } = require("readline/promises")
-const { exec } = require('child_process')
-const { promisify } = require('util');
-const { writeFile } = require('fs/promises')
-const execAsync = promisify(exec)
+const { execSync } = require('child_process')
+const { writeFileSync } = require('fs')
 const ora = require('ora');
 const { Lollama } = require('./lollama');
-//const trucolor = (r,g,b) => `\x1b[38;2;${r};${g};${b}m`
-const GAYSHIT = ['\x1b[38;2;255;0;0m', '\x1b[38;2;255;255;0m', '\x1b[38;2;0;255;0m', '\x1b[38;2;0;255;255m', '\x1b[38;2;0;0;255m', `\x1b[38;2;255;0;255m`]
-const RES = '\x1b[0m', PINK = '\x1b[35m', CYAN = '\x1b[36m'
-
-const MODEL = PINK + 'Select model => ' + CYAN
-const MATH = PINK + 'Math Question? (y/n) => ' + CYAN
-const PROMPT = PINK + 'Enter prompt => ' + CYAN
-const LOADING = PINK + 'Generating response...' + RES
-const PLSMATH = 'Please generate the response in LaTex (no markdown)'
-
-const STARTLATEX = '\\documentclass[14pt]{article}\n\\usepackage{amsmath, amssymb}\n\\usepackage[left=1cm, right=1cm, top=1cm, bottom=1cm]{geometry}\n\\begin{document}\n\\begin{Large}\n'
-const ENDLATEX = '\n\\end{Large}\n\\end{document}'
-const ASSETS = __dirname + '/assets'
-const TEXFILE = ASSETS + '/file.tex';
 
 
 (async () => {
     const models = await Lollama.getModels()
-    Array.from(models.entries()).forEach(([i, m]) => console.log(`\t${GAYSHIT[i%6]}${i}: ${PINK}${m.name}`))
+    console.log() 
+    Array.from(models.entries()).forEach(([i, m]) => console.log(`\t🐒 ${i} 🧠 ${m.name} `))
+    console.log() 
 
-    const rl = createInterface({input: process.stdin, output: process.stdout})
+    const rl = createInterface({input: process.stdin, output: process.stdout});
     let n = null
-    do n = await rl.question(MODEL).then(s => parseInt(s)).then(n => !isNaN(n)? n: null)
+    do n = await rl.question(`💲🐒❓👉 `).then(str => parseInt(str)).then(n => isNaN(n)? null: n)
     while (n == null || n >= models.length || n < 0)
 
-    let math = null
-    do math = await rl.question(MATH).then(s => s.trim().toLowerCase()).then(r => r === 'y'? true : r === 'n'? false : null) 
-    while (math == null)
-
-    const prompt = await rl.question(PROMPT)
-    if (!prompt.trim()) return
+    let prompt = null 
+    do prompt = await rl.question(`💲🍌❓👉 `)
+    while (!prompt || !prompt.trim())
     rl.close()
 
     Lollama.model = models[n].name 
 
-    let spin = ora({text: LOADING, color: 'cyan'}).start()
-    const res = await Lollama.chat(prompt)
-    const response = Lollama.filterThinking(res.response)
+    let spin = ora({text: 'generating response', color: 'green'}).start()
+    const res = await Lollama.chat(prompt) 
     spin.stop()
 
-    if (math) {
-        await writeFile(TEXFILE, STARTLATEX + response + PLSMATH + ENDLATEX)
-        const {out, err} = await execAsync(`pdflatex --output-directory ${ASSETS} ${TEXFILE}`)
-        if (err) {
-            console.error(err)
-            process.exit(1)
-        }
-        await execAsync(`brave-browser ${ASSETS}/file.pdf`, {detached: true, stdio: 'ignore'})
-    } else console.log(response) 
-
-    await execAsync(`aplay ${ASSETS}/sound.wav`)
-    console.log(`${PINK}${Lollama.tokensPerSecond(res)} tokens per second${RES}`)
+    writeFileSync(__dirname + '/lol.html', make_html(Lollama.filterThinking(res.response)))
+    execSync(`brave-browser ${__dirname}/lol.html`, {detached: true, stdio: 'ignore'})
+    execSync(`aplay -q ${__dirname}/excited_monkey.wav`)
+    console.log(`${Lollama.tokensPerSecond(res)} tokens per second`)
 })()
+
+
+const make_html = (res) => `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Monke</title>
+    <link rel="icon" type="image/svg+xml" href="banana.svg">
+    <style>
+        body { background-color: #121212; color: #e0e0e0; margin: 1rem 2rem 1rem 2rem; }
+        .light-mode { background-color: #ffffff; color: #000000; }
+        button:hover { background-color: #666; }
+        button { float: right; padding: 0.5rem 0.75rem; margin: 0 0 1rem 1rem; background-color: #444; color: #fff; border: none; cursor: pointer; border-radius: 0.5rem; font-size: x-large; }
+    </style>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+    <button id='buttonerino' onclick="toggle()">🌞</button>
+    <p>${res}</p>
+    <script> 
+        const toggle = () => { 
+            document.body.classList.toggle('light-mode'); 
+            let btn = document.getElementById('buttonerino'); 
+            btn.textContent === '🌜' ? btn.textContent = '🌞': btn.textContent = '🌜'; 
+        }
+        document.addEventListener('keydown', (event) => { if (event.code === 'Space') toggle() })
+    </script>
+</body>
+</html>`
+
 
