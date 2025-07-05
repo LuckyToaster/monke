@@ -1,5 +1,5 @@
 const { createInterface } = require("readline/promises")
-const { execSync } = require('child_process')
+const { execSync, exec } = require('child_process')
 const { writeFileSync } = require('fs')
 const ora = require('ora');
 const { Lollama } = require('./lollama');
@@ -7,30 +7,48 @@ const { Lollama } = require('./lollama');
 
 (async () => {
     const models = await Lollama.getModels()
-    console.log() 
-    Array.from(models.entries()).forEach(([i, m]) => console.log(`\t🐒 ${i} 🧠 ${m.name} `))
-    console.log() 
-
     const rl = createInterface({input: process.stdin, output: process.stdout});
-    let n = null
-    do n = await rl.question(`💲🐒❓👉 `).then(str => parseInt(str)).then(n => isNaN(n)? null: n)
-    while (n == null || n >= models.length || n < 0)
+
+    if (process.argv.length == 3 && !isNaN(parseInt(process.argv[2])) && parseInt(process.argv[2]) < models.length)
+        Lollama.model = models[parseInt(process.argv[2])].name
+    else {
+        console.log() 
+        Array.from(models.entries()).forEach(([i, m]) => console.log(`\t🐒 ${i} 🧠 ${m.name} `))
+        console.log() 
+
+        let n = null
+        do n = await rl.question(`💲🐒❓👉 `).then(str => parseInt(str)).then(n => isNaN(n)? null: n)
+        while (n == null || n >= models.length || n < 0)
+
+        Lollama.model = models[n].name 
+    }
 
     let prompt = null 
     do prompt = await rl.question(`💲🍌❓👉 `)
     while (!prompt || !prompt.trim())
     rl.close()
 
-    Lollama.model = models[n].name 
+    const start = Date.now()
+    let res = null
+    let spin = ora({prefixText: '💲🐒🧠', color: 'green', spinner: 'binary'}).start() // sand, binary, bouncingBar, monkey, hearts, clocks, grenade, weather, moon, material, fingerDace, fistBump, mindblown, soccerHeader
 
-    let spin = ora({text: 'generating response', color: 'green'}).start()
-    const res = await Lollama.chat(prompt) 
-    spin.stop()
+    try { 
+        res = await Lollama.chat(prompt) 
+    } catch (e) { 
+        console.error(e.message) 
+    }
 
-    writeFileSync(__dirname + '/lol.html', make_html(Lollama.filterThinking(res.response)))
-    execSync(`brave-browser ${__dirname}/lol.html`, {detached: true, stdio: 'ignore'})
-    execSync(`aplay -q ${__dirname}/excited_monkey.wav`)
-    console.log(`${Lollama.tokensPerSecond(res)} tokens per second`)
+    spin.stop({indent: 0})
+
+    let time = (Date.now() - start) / 1000
+    if (time > 60) time =  (time/60).toFixed(2) + ' minutes'
+    else time = parseInt(time) + ' seconds'
+
+    writeFileSync(`${__dirname}/assets/lol.html`, make_html(Lollama.filterThinking(res.response)))
+    execSync(`brave-browser ${__dirname}/assets/lol.html`, {detached: true, stdio: 'ignore'})
+    exec(`aplay -q ${__dirname}/assets/excited_monkey.wav`)
+
+    console.log(`💲 ${Lollama.tokensPerSecond(res)} 🍌×s⁻¹ 🙉\n💲 ${time} 🙉`)
 })()
 
 

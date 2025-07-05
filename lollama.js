@@ -21,12 +21,12 @@ class Lollama {
     }
 
     static async chat(prompt) {
-        Lollama._reqData.body = JSON.stringify({model: Lollama.model, prompt: prompt, stream: false, timeout: 600000})
+        Lollama._reqData.body = JSON.stringify({model: Lollama.model, prompt: prompt, stream: false, timeout: 1200000}) // timeout 20 mins?
         return await fetch(`${Lollama._url}generate`, Lollama._reqData).then(r => r.json())
     }
 
     static async chatStreaming(prompt, cb) {
-        Lollama._reqData.body = JSON.stringify({model: Lollama.model, prompt: prompt})
+        Lollama._reqData.body = JSON.stringify({model: Lollama.model, prompt: prompt, timeout: 120000})
         const res = await fetch(`${Lollama._url}generate`, Lollama._reqData)
         if (!res.ok) throw new Error(`SHOOT!: ${res.status}`)
 

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Monke</title>
+    <link rel="icon" type="image/svg+xml" href="banana.svg">
+    <style>
+        body { background-color: #121212; color: #e0e0e0; margin: 1rem 2rem 1rem 2rem; }
+        .light-mode { background-color: #ffffff; color: #000000; }
+        button:hover { background-color: #666; }
+        button { float: right; padding: 0.5rem 0.75rem; margin: 0 0 1rem 1rem; background-color: #444; color: #fff; border: none; cursor: pointer; border-radius: 0.5rem; font-size: x-large; }
+    </style>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+    <button id='buttonerino' onclick="toggle()">🌞</button>
+    <p>Mean deviation and standard deviation are both measures of dispersion in statistics, which help us understand how spread out the data points are around a central tendency (like the mean or median). Here's why they exist:
+
+### 1. **Mean Deviation**
+   - **Definition**: It is the average of the absolute differences between each data point and the mean.
+   - **Purpose**:
+     - Helps quantify the variability in the dataset.
+     - Provides a measure of how "spread out" the data points are.
+   - **Limitations**:
+     - Sensitive to outliers because it uses absolute values.
+     - Less commonly used than standard deviation.
+
+### 2. **Standard Deviation**
+   - **Definition**: It is the square root of the variance, which is the average of the squared differences from the mean.
+   - **Purpose**:
+     - Offers a more robust measure of dispersion because squaring the differences eliminates the effect of negative values.
+     - Has the same units as the data, making it interpretable.
+     - Widespread use in various fields (e.g., finance, science) for risk assessment and normal distribution modeling.
+   - **Limitations**:
+     - Sensitive to outliers due to squaring.
+     - Requires non-negative values.
+
+### Why These Measures Exist
+- **To Understand Data Spread**: Both measures help us understand how much the data varies around a central value. This is crucial for making informed decisions and drawing meaningful conclusions.
+- **Statistical Inference**: They are fundamental in hypothesis testing, confidence intervals, and regression analysis, where understanding variability is essential.
+- **Comparative Analysis**: Allows comparison of datasets with different scales or units (e.g., using z-scores).
+
+In summary, mean deviation and standard deviation exist to provide insights into the spread of data, aiding in better data interpretation and decision-making.</p>
+    <script> 
+        const toggle = () => { 
+            document.body.classList.toggle('light-mode'); 
+            let btn = document.getElementById('buttonerino'); 
+            btn.textContent === '🌜' ? btn.textContent = '🌞': btn.textContent = '🌜'; 
+        }
+        document.addEventListener('keydown', (event) => { if (event.code === 'Space') toggle() })
+    </script>
+</body>
+</html>
